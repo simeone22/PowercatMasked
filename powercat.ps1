@@ -1,4 +1,4 @@
-function powercat
+function rvshpcmskd
 {
   param(
     [alias("Client")][string]$c="",
