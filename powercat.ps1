@@ -1,4 +1,4 @@
-function Invoke-PtyS
+function PtyS
 {   
     <#
         .SYNOPSIS
