@@ -41,9 +41,9 @@ function PtyS
             throw "RemotePort missing parameter"
         }
     }
-    $parametersConPtyShell = @($RemoteIp, $RemotePort, $Rows, $Cols, $CommandLine)
+    $parametersPtyS = @($RemoteIp, $RemotePort, $Rows, $Cols, $CommandLine)
     Add-Type -TypeDefinition $Source -Language CSharp;
-    $output = [ConPtyShellMainClass]::ConPtyShellMain($parametersConPtyShell)
+    $output = [PtySMainClass]::PtySMain($parametersPtyS)
     Write-Output $output
 }
 
